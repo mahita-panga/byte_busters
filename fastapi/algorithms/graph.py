@@ -9,7 +9,7 @@ def get_weather_context(lat , long):
         "current": ["rain", "showers", "snowfall", "weather_code", "cloud_cover"]
         }
     response = requests.get(url ,params=params )
-    print(response.json()['current'])
+    return response.json()['current']
 
 class Graph:
     def __init__(self) -> None:
@@ -57,8 +57,6 @@ class Graph:
 
     def assign_node_coordinates(self):
         self.coordinate_map = {}
-
-
         for route in self.routes.values: 
             # print(route[6])
             if route[4] not in self.coordinate_map : 
@@ -75,7 +73,8 @@ class Graph:
 
 def main():
     graph = Graph()
-    get_weather_context(33.7,74.3)
-
+    weather = get_weather_context(8.5,76.9)
+    print(type(weather))
+    print(weather)
 if __name__ == "__main__":
     main()
