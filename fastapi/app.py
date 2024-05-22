@@ -3,10 +3,13 @@ import numpy as np
 from fastapi import APIRouter, FastAPI, Response
 from openap import FuelFlow, Emission, prop
 import traffic
-from utils.data_models import RequestAircraftModel, ResponseAircraftInfo
+from utils.data_models import RequestAircraftModel, ResponseAircraftInfo ,SrcDesParams
 from utils.utils import create_plots
-router = APIRouter()
+from algorithms.a_star import *
 
+router = APIRouter()
+routes = Graph()
+pathplanner = PathPlanner(graph=routes)
 
 @router.get("/health")
 def get_health() -> dict:
@@ -60,9 +63,32 @@ def aircraft_details(response: Response, payload: RequestAircraftModel):
 
     return response_data
 
+@router.post("/get_paths")
+def get_paths_for_src_to_des(payload:SrcDesParams):
+    """
+    curl -X 'POST' \
+    'http://127.0.0.1:8000/get_paths' \
+    -H 'accept: application/json' \
+    -H 'Content-Type: application/json' \
+    -d '{
+    "src": [
+        13,80
+    ],
+    "des": [
+        19,72
+    ],
+    "on_air": false
+    }'
+    Takes 5 - 10 seconds to evaluate paths and return them 
+    """
+    src = payload.src
+    des = payload.des
+    on_air = payload.on_air
+    response = pathplanner.return_data_dict(src=src,des=des,on_air=on_air)
+    return response
 
 app = FastAPI(title="ByteBusters")
 app.include_router(router)
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8002)
+    uvicorn.run(app, host="0.0.0.0", port=8000)

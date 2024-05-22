@@ -1,4 +1,4 @@
-from typing import List
+from typing import List , Tuple
 
 from pydantic import BaseModel
 
@@ -12,3 +12,8 @@ class ResponseAircraftInfo(BaseModel):
     aircraft_mass: float
     aircraft_emissions: dict
     aircraft_fuel: str
+
+class SrcDesParams(BaseModel):
+    src:List
+    des:List
+    on_air:bool

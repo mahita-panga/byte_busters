@@ -1,4 +1,4 @@
-from graph import Graph , get_weather_context
+from algorithms.graph import Graph , get_weather_context
 from heapq import nsmallest , heappush , heappop
 from math import sqrt 
 import json
@@ -118,7 +118,7 @@ class PathPlanner():
 
     def update_weather_data_for_node(self , node_id ) :
         if node_id not in self.weather_data :
-            print(node_id)
+            # print(node_id)
             lat , long = self.graph.coordinate_map[node_id]
             self.weather_data[node_id] = (time.time() , get_weather_context(lat , long))
             
