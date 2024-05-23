@@ -1,0 +1,9 @@
+*.ipynb linguist-vendored
+notebooks/** linguist-vendored
+
+
+# Binary files
+*.jpg    binary
+*.png    binary
+*.gif    binary
+*.zip    binary
