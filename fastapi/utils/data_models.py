@@ -17,3 +17,7 @@ class SrcDesParams(BaseModel):
     src:List
     des:List
     on_air:bool
+
+class AirplanePosition(BaseModel):
+    current_pos:List
+    

@@ -221,8 +221,8 @@ class PathPlanner():
             return {
                 "fly_status" : "Cannot Fly" if not on_air else "Find nearby airport as overall bad weather conditions", 
                 "paths" : None ,
-                "rain areas" : rain_nodes ,
-                "snow nodes" : snow_nodes
+                "rain_areas" : rain_nodes ,
+                "snow_areas" : snow_nodes
             }
         else : 
             return {

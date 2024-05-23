@@ -1,0 +1,50 @@
+{
+    "airports": [
+      {
+        "name": "Indira Gandhi International Airport",
+        "city": "Delhi",
+        "state": "Delhi",
+        "country": "India",
+        "code": "DEL",
+        "latitude": 28.644800,
+        "longitude": 77.102600
+      },
+      {
+        "name": "Chhatrapati Shivaji Maharaj International Airport",
+        "city": "Mumbai",
+        "state": "Maharashtra",
+        "country": "India",
+        "code": "BOM",
+        "latitude": 19.072800,
+        "longitude": 72.877700
+      },
+      {
+        "name": "Chennai International Airport",
+        "city": "Chennai",
+        "state": "Tamil Nadu",
+        "country": "India",
+        "code": "MAA",
+        "latitude": 13.005800,
+        "longitude": 80.183300
+      },
+      {
+        "name": "Kempegowda International Airport",
+        "city": "Bangalore",
+        "state": "Karnataka",
+        "country": "India",
+        "code": "BLR",
+        "latitude": 12.940500,
+        "longitude": 77.566700
+      },
+      {
+        "name": "Rajiv Gandhi International Airport",
+        "city": "Hyderabad",
+        "state": "Telangana",
+        "country": "India",
+        "code": "HYD",
+        "latitude": 17.234800,
+        "longitude": 78.433300
+      }
+    ]
+}
+

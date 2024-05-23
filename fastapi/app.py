@@ -3,7 +3,7 @@ import numpy as np
 from fastapi import APIRouter, FastAPI, Response
 from openap import FuelFlow, Emission, prop
 import traffic
-from utils.data_models import RequestAircraftModel, ResponseAircraftInfo ,SrcDesParams
+from utils.data_models import RequestAircraftModel, ResponseAircraftInfo ,SrcDesParams , AirplanePosition
 from utils.utils import create_plots
 from algorithms.a_star import *
 
@@ -66,29 +66,59 @@ def aircraft_details(response: Response, payload: RequestAircraftModel):
 @router.post("/get_paths")
 def get_paths_for_src_to_des(payload:SrcDesParams):
     """
-    curl -X 'POST' \
-    'http://127.0.0.1:8000/get_paths' \
-    -H 'accept: application/json' \
-    -H 'Content-Type: application/json' \
-    -d '{
-    "src": [
-        13,80
-    ],
-    "des": [
-        19,72
-    ],
-    "on_air": false
-    }'
-    Takes 5 - 10 seconds to evaluate paths and return them 
+    This asynchronous endpoint retrieves optimal routes from a source to a destination, considering:
+
+    - Source and destination coordinates (provided in lists)
+    - On-air restriction (optional, defaults to False)
+
+    Returns:
+
+    dict: A dictionary containing the following information:
+        - paths: A list of optimal routes from source to destination.
+        - fly_status: A boolean indicating if all returned paths are airborne.
+        - rain_areas: A list of coordinates where rain is happening 
+        - snow_ares : A list of coordinates where snow is happening
     """
     src = payload.src
     des = payload.des
     on_air = payload.on_air
-    response = pathplanner.return_data_dict(src=src,des=des,on_air=on_air)
+    response =  pathplanner.return_data_dict(src=src,des=des,on_air=on_air)
     return response
+
+@router.post('/nearest_airport')
+def get_nearest_airport(payload:AirplanePosition) :
+    """
+        This endpoint identifies the nearest airport to a provided airplane's current position.
+
+    Args:
+        payload (AirplanePosition): A dictionary containing the airplane's current latitude and longitude coordinates.
+
+    Returns:
+        dict: Information about the nearest airport, including:
+            - name (str): The name of the airport.
+            - city (str): The city where the airport is located.
+            - state (str): The state where the airport is located (if applicable).
+            - country (str): The country where the airport is located.
+            - code (str): The IATA airport code.
+            - latitude (float): The latitude coordinate of the airport.
+            - longitude (float): The longitude coordinate of the airport.
+    """
+
+    src = payload.current_pos
+    with open('../Data/airports.json') as fp:
+        data = json.load(fp)
+        res_idx = None
+        minimum_dis = 1000
+        for idx , airport in enumerate(data['airports']) :
+            dis = euclidean_distance(src[0],src[1] , airport['latitude'],airport['longitude'])
+            if dis < minimum_dis : 
+                res_idx = idx
+                minimum_dis = dis
+        return data['airports'][res_idx]
 
 app = FastAPI(title="ByteBusters")
 app.include_router(router)
+    
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
