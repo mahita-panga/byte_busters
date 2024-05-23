@@ -110,7 +110,7 @@ def get_nearest_airport(payload:AirplanePosition) :
         res_idx = None
         minimum_dis = 1000
         for idx , airport in enumerate(data['airports']) :
-            dis = euclidean_distance(src[0],src[1] , airport['latitude'],airport['longitude'])
+            dis = euclidean_distance(src[0],src[1] , float(airport['latitude_deg']),float(airport['longitude_deg']))
             if dis < minimum_dis : 
                 res_idx = idx
                 minimum_dis = dis
