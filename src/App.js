@@ -1,25 +1,29 @@
-import logo from './logo.svg';
+import React, {useState} from 'react';
 import './App.css';
+import HealthDashboard from './pages/HealthDashboard';
+import Navbar from './components/Navbar';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import DashBoardmap from './pages/DashBoardMap copy';
 
 function App() {
+  const [flightNumberModel, setFlightNumberModel] = useState([]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+    <Router>
+      <Navbar />
+      <div className="app-content">
+        <Routes>
+          <Route path="/dashboard" element={ <HealthDashboard />} />
+          {/* <Route path="/" element={ <DashBoardmap />} /> */}
+          <Route path="/" element={<DashBoardmap flightNumberModel={flightNumberModel} setFlightNumberModel={setFlightNumberModel} />} />
+
+        </Routes>
+      </div>
+    </Router>
+    </>
   );
 }
 
 export default App;
+
