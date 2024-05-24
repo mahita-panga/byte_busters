@@ -1,231 +1,17 @@
-/* 
-  .input-search {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  
-    gap: 10px;
-    width:50rem;
-    margin-left:28%;
-  }
-  .input-container{
-    display:flex;
-    width:100%;
-  
-  }
-  .input-group {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  
-  .input-label {
-    margin-bottom: 5px;
-    font-weight: bold;
-    margin-right: 10px;
-    font-size: 1.3em;
-  }
-  .input-label-AvaNum{
-    margin-right: 10px;
-    font-size: .8em;
-  }
-  .flight-number .input-label {
-    margin-bottom: 5px;
-    font-weight: bold;
-    margin-right: 10px;
-    font-size: 1.3em;
-    white-space: nowrap;
-  }
-  input[type="text"] {
-    padding: 10px;
-    border: 2px solid #333;
-    border-radius: 5px;
-    background-color: #222;
-    color: #fff;
-    width: 200px;
-  }
-  .flight-dropdown{
-    padding: 3px;
-    border: 2px solid #333;
-    border-radius: 5px;
-    background-color: #fff;
-    color: #333;
-    width: 110px;
-  }
-  
-  ul {
-    list-style: none;
-    padding: 0;
-    margin-top: 5px;
-    background-color: #222;
-    border-radius: 5px;
-    overflow: hidden;
-  }
-  
-  li {
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    cursor: pointer;
-  }
-  
-  .print-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #00bfff;
-    color: #fff;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    margin-top: 24px;
-  }
-  
-  .print-button:hover {
-    background-color: #3690ef;
-    transform: scale(1.05);
-  }
-  
-  .search-button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    background-color: #00bfff;
-    color: #fff;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.3s, transform 0.3s;
-    margin-left: 10px; 
-  }
-  
-  .search-button:hover {
-    background-color: #3690ef;
-    transform: scale(1.05);
-  }
-  
-  .search-container {
-    display: flex;
-    align-items: center;
-  }
-  .flight-number{
-    display: flex;
-    align-items: center;
-    margin-left: 28.5rem;
-  }
-  .search-input {
-    padding: 10px;
-    border: 2px solid #333;
-    border-radius: 5px;
-    background-color: #222;
-    color: #fff;
-    width: 200px;
-  }
-  
-  .white-line {
-    border: none;          
-    border-top: 2px solid white; 
-    margin: 20px 0;      
-  }
-  
-  .legends-container {
-    margin-left:10rem;
-    background-color: white;
-    color:black;
-    border-radius: 5px;
-    justify-content: space-between;
-   
-  }
-  
-  .legend {
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
+/* .app-container {
+  padding-bottom: 80px; 
+} */
+/* App.css or your main CSS file */
+.app {
+  display: flex;
+  flex-direction: column;
 
-    padding: 6px;
-  }
-  
-  .domestic-icon {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    margin-right: 10px;
-    padding:10px
-  }
-  
-  .international-icon {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    background-color: blue; 
-    border-radius: 50%;
-    margin-right: 10px;
-  }
-  .dropdown-container {
-    display: flex;
-    width: 100rem;
-    justify-content: right;
-    align-items: center;
-    margin-bottom: 20px;
-    margin-top: 22px;
-  }
+}
+.app-container {
+  flex: 1;
+  padding-bottom: 0px; 
+}
 
-  .iHover {
-    position: relative;
-    display: inline-block;
-  }
-
-  .tooltip-text {
-    visibility: hidden;
-    width: 120px;
-    background-color: black;
-    color: white;
-    text-align: center;
-    padding: 5px;
-    border-radius: 6px;
-    position: absolute;
-    z-index: 1;
-    bottom: 125%;
-    left: 50%;
-    margin-left: -60px;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  
-  .iHover:hover .tooltip-text {
-    visibility: visible;
-    opacity: 1;
-    
-  }
-  
-  .info-icon {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
-    margin-right: .2rem;
-  }
-  
-  .tooltip-text::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: black transparent transparent transparent;
-  }
-  .waringss {
- 
-    font-style: italic;
-    margin-bottom: 10px;
-    width:100%;
-    justify-content: center;
-    display: flex;
-  }
-  
-  */
-
-  /* General Styles */
 .input-search {
   display: flex;
   justify-content: center;
@@ -271,17 +57,17 @@ input[type="text"] {
   padding: 10px;
   border: 2px solid #333;
   border-radius: 5px;
-  background-color: #222;
-  color: #fff;
+  background-color: #fcfdfe;
+  color: #071a3d;
   width: 200px;
 }
 
 .flight-dropdown {
   padding: 3px;
-  border: 2px solid #333;
+  border: 2px solid #071a3d;
   border-radius: 5px;
   background-color: #fff;
-  color: #333;
+  color: #071a3d;
   width: 110px;
 }
 
@@ -289,14 +75,14 @@ ul {
   list-style: none;
   padding: 0;
   margin-top: 5px;
-  background-color: #222;
+  background-color: #071a3d;
   border-radius: 5px;
   overflow: hidden;
 }
 
 li {
   padding: 10px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid #071a3d;
   cursor: pointer;
 }
 
@@ -304,7 +90,7 @@ li {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
-  background-color: #00bfff;
+  background-color: #071a3d;
   color: #fff;
   font-size: 1em;
   cursor: pointer;
@@ -313,7 +99,7 @@ li {
 }
 
 .print-button:hover {
-  background-color: #3690ef;
+  background-color: #071a3de0;
   transform: scale(1.05);
 }
 
@@ -321,7 +107,7 @@ li {
   padding: 10px 20px;
   border: none;
   border-radius: 5px;
-  background-color: #00bfff;
+  background-color: #071a3d;
   color: #fff;
   font-size: 1em;
   cursor: pointer;
@@ -330,7 +116,7 @@ li {
 }
 
 .search-button:hover {
-  background-color: #3690ef;
+  background-color: #071a3de0;
   transform: scale(1.05);
 }
 
@@ -347,23 +133,24 @@ li {
 
 .search-input {
   padding: 10px;
-  border: 2px solid #333;
+  border: 2px solid #071a3d;
   border-radius: 5px;
-  background-color: #222;
+  background-color: #071a3d;
   color: #fff;
   width: 200px;
 }
 
 .white-line {
   border: none;
-  border-top: 2px solid white;
+  border-top: 2px solid #071a3d;
   margin: 20px 0;
 }
 
 .legends-container {
   margin-left: 10rem;
+  border: 2px solid #071a3d ;
   background-color: white;
-  color: black;
+  color: #071a3d;
   border-radius: 5px;
   justify-content: space-between;
 }
@@ -409,8 +196,8 @@ li {
 
 .tooltip-text {
   visibility: hidden;
-  width: 120px;
-  background-color: black;
+  /* width: 720px; */
+  background-color: #071a3d;
   color: white;
   text-align: center;
   padding: 5px;
@@ -498,7 +285,8 @@ li {
 
   .legends-container {
     margin-left: 0;
-    width: 100%;
+    margin-top: 7px;
+    width: 12rem;
     flex-direction: column;
     align-items: center;
   }
