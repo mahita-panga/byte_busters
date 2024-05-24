@@ -128,7 +128,7 @@ li {
 .flight-number {
   display: flex;
   align-items: center;
-  margin-left: 28.5rem;
+  margin-left: 34%;
 }
 
 .search-input {
@@ -240,6 +240,18 @@ li {
   width: 100%;
   justify-content: center;
   display: flex;
+}
+.popup-container{
+  text-align: center;
+}
+
+
+
+
+.popup-container p {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #777;
 }
 
 /* Media Queries */

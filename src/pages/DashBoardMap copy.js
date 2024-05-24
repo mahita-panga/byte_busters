@@ -186,17 +186,7 @@ const allowedModels = new Set([
 
 
 const DashBoardmap = () => {
-  const route1 = [
-    { lat: 28.6139, lng: 77.209, name: "New Delhi" },
-    { lat: 22.7196, lng: 75.8577, name: "Indore" },
-    { lat: 19.076, lng: 72.8777, name: "Mumbai" },
-  ];
-
-  const route2 = [
-    { lat: 28.6139, lng: 77.209, name: "New Delhi" },
-    { lat: 26.9124, lng: 75.7873, name: "Jaipur" },
-    { lat: 19.076, lng: 72.8777, name: "Mumbai" },
-  ];
+ 
 
   const [source, setSource] = useState("");
   const [destination, setDestination] = useState("");
@@ -209,7 +199,7 @@ const DashBoardmap = () => {
   const[paths,setPaths]=useState([]);
   const[fly,setFly]=useState("");
   const { flightNumberModel, setFlightNumberModel } = useContext(FlightContext);
-
+  const [loading, setLoading] = useState(false);
   const [domesticFlights, setDomesticFlights] = useState([]);
   const [internationalFlights, setInternationalFlights] = useState([]);
   const [selectedFlightNumber, setSelectedFlightNumber] = useState("");
@@ -240,6 +230,7 @@ const DashBoardmap = () => {
 
   const handleSearch = () => {
     const flight = flights.find((flight) => flight.number === searchInput);
+    // setLoading(true);
 
     if (flight) {
       setHighlightedFlight(flight.number);
@@ -258,48 +249,84 @@ const DashBoardmap = () => {
       alert("Flight not found");
     }
   };
-  const printCoordinates =  async()=> {
-    console.log(source, destination);
-    if (!source || !destination) {
-      alert("Please select source and destination airports");
-      return;
-    }
-    console.log("typeeeeee",typeof(source.lat));
-    const response = await axios.post('http://65.2.161.206:8000/get_paths', {
+  // const printCoordinates =  async()=> {
+  //   // console.log(source, destination);
+  //   if (!source || !destination) {
+  //     alert("Please select source and destination airports");
+  //     return;
+  //   }
+  //   // console.log("typeeeeee",typeof(source.lat));
+  //   const response = await axios.post('http://65.2.161.206:8000/get_paths', {
       
-        "src": [
-          source.lat,source.lng
-        ],
-        "des": [
-          destination.lat,destination.lng
-        ],
-        "on_air": false
+  //       "src": [
+  //         source.lat,source.lng
+  //       ],
+  //       "des": [
+  //         destination.lat,destination.lng
+  //       ],
+  //       "on_air": false
     
-    });
-    console.log(response.data.fly_status);
-    if (response.data.paths === null) {
-      alert( `${response.data.fly_status}`);
-      return;
-    }
-    if (response.data.paths.length > 10) {
-      // Slice the response to keep only the first 5 paths
-      response.data.paths = response.data.paths.slice(0, 10);
-  }
+  //   });
+  //   // console.log(response.data.fly_status);
+  //   if (response.data.paths === null) {
+  //     alert( `${response.data.fly_status}`);
+  //     return;
+  //   }
+  //   if (response.data.paths.length > 10) {
+  //     // Slice the response to keep only the first 5 paths
+  //     response.data.paths = response.data.paths.slice(0, 10);
+  // }
   
 
   
 
-   setPaths( response.data.paths);
-    console.log("Source Coordinates:", source);
-    console.log("Destination Coordinates:", destination);
-    console.log("response for paths", paths);
+  //  setPaths( response.data.paths);
+  //   // console.log("Source Coordinates:", source);
+  //   // console.log("Destination Coordinates:", destination);
+  //   // console.log("response for paths", paths);
    
-  };
+  // };
 
-  
+  const printCoordinates = async () => {
+    setLoading(true); // Set loading to true before fetching data
+
+    try {
+      console.log(source, destination);
+      if (!source || !destination) {
+        alert("Please select source and destination airports");
+        return;
+      }
+
+      const response = await axios.post('http://65.2.161.206:8000/get_paths', {
+        "src": [source.lat, source.lng],
+        "des": [destination.lat, destination.lng],
+        "on_air": false
+      });
+
+      console.log(response.data.fly_status);
+      if (response.data.paths === null) {
+        alert(`${response.data.fly_status}`);
+        return;
+      }
+      if (response.data.paths.length > 10) {
+        // Slice the response to keep only the first 10 paths
+        response.data.paths = response.data.paths.slice(0, 10);
+      }
+
+      setPaths(response.data.paths);
+      console.log("Source Coordinates:", source);
+      console.log("Destination Coordinates:", destination);
+      console.log("response for paths", paths);
+    } catch (error) {
+      console.error("Error fetching paths:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching data
+    }
+  };
 
   const fetchLiveFlights = async () => {
     try {
+      setLoading(true);
       const options = {
         method: "GET",
         url: "https://flight-radar1.p.rapidapi.com/flights/list-in-boundary",
@@ -370,6 +397,8 @@ const DashBoardmap = () => {
       setFlightNumberModel(updatedFlightNumbers);
     } catch (error) {
       console.error("Error fetching live flights:", error);
+    } finally {
+      setLoading(false); // Set loading to false after fetching and processing data
     }
   };
   useEffect(() => {
@@ -386,6 +415,8 @@ const DashBoardmap = () => {
 
   return (
     <div className="app-container">
+      
+
       <div className="input-container">
         <div className="input-search">
           <div className="input-group">
@@ -439,8 +470,8 @@ const DashBoardmap = () => {
        
         <div className="dropdown-container">
           <div className="iHover">
-            <span className="tooltip-text" style={{width: '120px'}}>
-            Currently, our data only includes the following flight numbers.
+            <span className="tooltip-text" style={{width: '150px'}}>
+            Our current data set includes only the following flight numbers, which are displayed on the map.
             </span>
             <FiInfo className="info-icon" />
           </div>
@@ -478,11 +509,15 @@ const DashBoardmap = () => {
           Optimal routes are exclusively available for domestic flights.
     <IN title="India" style={{height: '20px', width:'20px', marginLeft:'5px'}} />
 </div>
-
+{loading && (
+  <div className="loading-spinner" style={{ textAlign: 'center', marginTop: '20px' }}>
+    {/* Your loading spinner component */}
+    <p>Loading...</p>
+  </div>
+)}
         {/* Map */}
       <MapComponent
-        route1={route1}
-        route2={route2}
+        
         paths={paths}
         domesticAirports={domesticAirports} 
         //flights={flights}

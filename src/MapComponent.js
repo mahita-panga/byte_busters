@@ -1,10 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Polyline,Tooltip  } from 'react-leaflet';
 //import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as L from "leaflet";
 import axios from "axios";
+import { FiInfo } from "react-icons/fi";
 const airportsData = require('./AirportsData.json');
 // Fix default icon issues with webpack
 delete L.Icon.Default.prototype._getIconUrl;
@@ -125,11 +125,12 @@ const formatCoordinates = (coordinates) => {
 // };
 
 
-const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlights, internationalFlights, searchedFlightCoordinates,paths, domesticAirports}) => {
+const MapComponent = ({ flights ,highlightedFlight ,domesticFlights, internationalFlights, searchedFlightCoordinates,paths, domesticAirports}) => {
 
   // Default center position
   let centerPosition = [28.6139, 77.2090]; // Default to New Delhi coordinates
   const [additionalPaths, setAdditionalPaths] = useState([]);
+  const [loading, setLoading] = useState(false);
   const displayPaths = additionalPaths.length > 0 ? additionalPaths : paths;
   useEffect(() => {
     // Clear additionalPaths when paths change
@@ -154,6 +155,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
   const handleButtonClick = async (flight) => {
     // Your existing logic to fetch paths from the server
     const airport = airportsData.airports.find(airport => airport.iata_code === flight.arrival);
+    setLoading(true);
   
   const sourceCoords = [Number(flight.lat), Number(flight.lng)];
   const destCoords = [Number(airport.latitude_deg), Number(airport.longitude_deg)];
@@ -163,6 +165,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
     "des": destCoords,
     "on_air": true
   });
+  setLoading(false);
     // Check fly_status and handle accordingly
     // if (response.data.fly_status.toLowerCase().replace(/\s/g, "") === "cannotfly") {
     //   alert("Cannot Fly in this region");
@@ -190,89 +193,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-     
-   {/* {paths[0] && paths[0].length> 0 && (
-    <>
-      <Marker position={[paths[0][0][0], paths[0][0][1]]}>
-        <Popup>Start</Popup>
-      </Marker>
-      <Marker position={[paths[0][paths[0].length - 1][0], paths[0][paths[0].length - 1][1]]}>
-        <Popup>End</Popup>
-      </Marker>
-    </>
-  )}
-
-{paths && paths[0] && paths[0].length > 0 && (
-        <>
-          <Marker position={[paths[0][0][0], paths[0][0][1]]}>
-            <Popup>Start</Popup>
-          </Marker>
-          <Marker position={[paths[0][paths[0].length - 1][0], paths[0][paths[0].length - 1][1]]}>
-            <Popup>End</Popup>
-          </Marker>
-        </>
-      )}
-
-    
-      {paths && paths.slice(1).map((coordinates, index) => (
-        <Polyline
-          key={index + 1}
-          positions={coordinates}
-          color="grey"
-        />
-      ))}
-
-      {paths && paths[0] && (
-        <Polyline
-          positions={paths[0]}
-          color="blue"
-          weight={5}
-        >
-          <Tooltip direction="center" offset={[0, -20]} opacity={1} className="custom-tooltip">
-            <div style={{ textAlign: 'center' }}>
-              <strong style={{ color: "blue" }}>Coordinates for optimal path:</strong><br />
-              <div dangerouslySetInnerHTML={{ __html: formatCoordinates(paths[0]) }} />
-            </div>
-          </Tooltip>
-        </Polyline>
-      )}
-
-     
-
-{(additionalPaths && additionalPaths.length > 0 ? additionalPaths : paths)[0] && (
-  <>
-    <Marker position={[(additionalPaths.length > 0 ? additionalPaths : paths)[0][0][0], (additionalPaths.length > 0 ? additionalPaths : paths)[0][0][1]]}>
-      <Popup>Start</Popup>
-    </Marker>
-    <Marker position={[(additionalPaths.length > 0 ? additionalPaths : paths)[0][(additionalPaths.length > 0 ? additionalPaths : paths)[0].length - 1][0], (additionalPaths.length > 0 ? additionalPaths : paths)[0][(additionalPaths.length > 0 ? additionalPaths : paths)[0].length - 1][1]]}>
-      <Popup>End</Popup>
-    </Marker>
-  </>
-)}
-
-{(additionalPaths && additionalPaths.length > 0 ? additionalPaths : paths).slice(1).map((coordinates, index) => (
-  <Polyline
-    key={index + 1}
-    positions={coordinates}
-    color="grey"
-  />
-))}
-
-{(additionalPaths && additionalPaths.length > 0 ? additionalPaths : paths)[0] && (
-  <Polyline
-    positions={(additionalPaths.length > 0 ? additionalPaths : paths)[0]}
-    color="blue"
-    weight={5}
-  >
-    <Tooltip direction="center" offset={[0, -20]} opacity={1} className="custom-tooltip">
-      <div style={{ textAlign: 'center' }}>
-        <strong style={{ color: "blue" }}>Coordinates for optimal path:</strong><br />
-        <div dangerouslySetInnerHTML={{ __html: formatCoordinates((additionalPaths.length > 0 ? additionalPaths : paths)[0]) }} />
-      </div>
-    </Tooltip>
-  </Polyline>
-)}
- */}
+  
 
 
 {displayPaths[0] && (
@@ -325,16 +246,30 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
           position={[flight.lat, flight.lng]}
           icon={domesticIcon}
         >
-          <Popup>
-            <strong>Flight Details:</strong><br />
+          <Popup className="popup-container">
+           <div style={{textAlign: 'center'}}>
+           <strong>Flight Details:</strong><br />
             Flight ID: {flight.id} <br />
             Flight Number: {flight.number}<br/>
-            Altitude: {flight.altitude} <br />
-            Velocity: {flight.velocity}<br/>
-            Aircraft Model: {flight.model}<br/>
-            Departure Airport: {flight.departure}<br/>
-            Arrival Airport: {flight.arrival}<br/>
-            <button onClick={() => handleButtonClick(flight)}>Find Optimal Path</button>
+            Altitude: {flight.altitude} feet<br />
+            Velocity: {flight.velocity} knots<br/>
+            Aircraft Model: {flight.model} <br/>
+            Departure Airport: {flight.departure} <br/>
+            Arrival Airport: {flight.arrival} <br/>
+            <button onClick={() => handleButtonClick(flight)} style={{marginTop:'2%', marginBottom:'0px'}}>Find Optimal Path</button>
+            {loading && (
+  <div className="loading-spinner" style={{ textAlign: 'center', marginTop: '20px' }}>
+    {/* Your loading spinner component */}
+    <p>Loading...</p>
+  </div>
+)}
+           </div>
+        
+           
+           <p style={{marginBottom: '2px', textAlign: 'center'}}><FiInfo className="info-icon" />For more info, enter flight <br/> number on Health Check page</p>
+            
+  
+            
           </Popup>
         </Marker>
       ))}
@@ -344,34 +279,49 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
           position={[flight.lat, flight.lng]}
           icon={internationalIcon}
         >
-          <Popup>
-            <strong>Flight Details:</strong><br />
+          <Popup className="popup-container">
+          <div style={{textAlign: 'center'}}>
+          <strong>Flight Details:</strong><br />
             Flight ID: {flight.id} <br />
             Flight Number: {flight.number}<br/>
-            Altitude: {flight.altitude} <br />
-            Velocity: {flight.velocity}<br/>
+            Altitude: {flight.altitude} feet<br />
+            Velocity: {flight.velocity} knots<br/>
             Aircraft Model: {flight.model}<br/>
             Departure Airport: {flight.departure}<br/>
             Arrival Airport: {flight.arrival}<br/>
-          </Popup>
+          </div>
+           
+            <p style={{marginBottom: '2px', textAlign: 'center'}}><FiInfo className="info-icon" />For more info, enter flight <br/> number on Health Check page</p>
+            </Popup>
         </Marker>
       ))}
 
 {searchedFlightCoordinates && (
         <Marker position={searchedFlightCoordinates} icon={searchedFlightIcon}>
         
-            <Popup>
-           <strong> Searched Flight Details:</strong><br />
+            <Popup className="popup-container">
+            <div style={{textAlign: 'center'}}>
+            <strong> Searched Flight Details:</strong><br />
             Flight ID: {searchedFlightCoordinates.id} <br />
             Flight Number: {searchedFlightCoordinates.number}<br/>
-            Altitude: {searchedFlightCoordinates.altitude} <br />
-            Velocity: {searchedFlightCoordinates.velocity}<br/>
+            Altitude: {searchedFlightCoordinates.altitude} feet<br />
+            Velocity: {searchedFlightCoordinates.velocity} knots<br/>
             Aircraft Model: {searchedFlightCoordinates.model}<br/>
             Departure Airport: {searchedFlightCoordinates.departure}<br/>
             Arrival Airport: {searchedFlightCoordinates.arrival}<br/>
             {domesticAirports.has(searchedFlightCoordinates.arrival) && (
         <button onClick={() => handleButtonClick(searchedFlightCoordinates)}>Find Optimal Path</button>
+        
       )}
+      {loading && (
+  <div className="loading-spinner" style={{ textAlign: 'center', marginTop: '20px' }}>
+    {/* Your loading spinner component */}
+    <p>Loading...</p>
+  </div>
+)}
+            </div>
+          
+      <p style={{marginBottom: '2px', textAlign: 'center'}}><FiInfo className="info-icon" />For more info, enter flight <br/> number on Health Check page</p>
           </Popup>
         </Marker>
       )}
