@@ -1,9 +1,11 @@
 
 import React, { useEffect, useRef, useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline,Tooltip  } from 'react-leaflet';
 //import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import * as L from "leaflet";
+import axios from "axios";
+const airportsData = require('./AirportsData.json');
 // Fix default icon issues with webpack
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -71,15 +73,69 @@ const internationalIcon = new L.Icon({
 //   return null;
 // };
 
+const formatCoordinates = (coordinates) => {
+  let formattedCoordinates = '';
+  for (let i = 0; i < coordinates.length; i++) {
+    formattedCoordinates += `[${coordinates[i][0].toFixed(4)}, ${coordinates[i][1].toFixed(4)}]`;
+    if (i !== coordinates.length - 1) {
+      formattedCoordinates += ', ';
+    }
+    // Insert line break after every 3-4 coordinates
+    if ((i + 1) % 3 === 0 && i !== coordinates.length - 1) {
+      formattedCoordinates += '<br />';
+    }
+  }
+  return formattedCoordinates;
+};
+
+// const handleButtonClick = async(flight)=> {
+//   // Print message to console
+//   console.log(`Hi! You clicked on the plane button for flight ID: ${flight.id}`);
+//   console.log("source", flight.lat, flight.lng);
+//   console.log("dest", flight.arrival);
+
+//   // Find the airport with matching IATA code
+//   const airport = airportsData.airports.find(airport => airport.iata_code === flight.arrival);
+  
+//   const sourceCoords = [Number(flight.lat), Number(flight.lng)];
+//   const destCoords = [Number(airport.latitude_deg), Number(airport.longitude_deg)];
+
+//   const response = await axios.post('http://127.0.0.1:8000/get_paths', {
+//     "src": sourceCoords,
+//     "des": destCoords,
+//     "on_air": true
+//   });
+//     console.log(response.data.fly_status);
+//     var flyStatus = response.data.fly_status.toLowerCase().replace(/\s/g, "");
+// var targetStatus = "cannotfly";
+
+// // Compare the modified strings
+// if (flyStatus === targetStatus) {
+//     alert("Cannot Fly in this region");
+//     return;
+// }
+//     if (response.data.paths.length > 10) {
+//       // Slice the response to keep only the first 5 paths
+//       response.data.paths = response.data.paths.slice(0, 10);
+//   }
+  
+
+// console.log("udti flight ka path",response.data.paths)
+
+// };
 
 
-
-const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlights, internationalFlights, searchedFlightCoordinates}) => {
+const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlights, internationalFlights, searchedFlightCoordinates,paths, domesticAirports}) => {
 
   // Default center position
   let centerPosition = [28.6139, 77.2090]; // Default to New Delhi coordinates
-
-
+  const [additionalPaths, setAdditionalPaths] = useState([]);
+  const displayPaths = additionalPaths.length > 0 ? additionalPaths : paths;
+  useEffect(() => {
+    // Clear additionalPaths when paths change
+    setAdditionalPaths([]);
+  }, [paths]);
+//useEffect(()=>{console.log("map se aaye",paths)},[paths])
   // useEffect(() => {
   //   const fetchCoordinates = async () => {
   //     const uniqueAirports = [...new Set(flights.map(flight => flight.arrival))];
@@ -95,17 +151,37 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
   //   fetchCoordinates();
   // }, [flights]);
 
+  const handleButtonClick = async (flight) => {
+    // Your existing logic to fetch paths from the server
+    const airport = airportsData.airports.find(airport => airport.iata_code === flight.arrival);
+  
+  const sourceCoords = [Number(flight.lat), Number(flight.lng)];
+  const destCoords = [Number(airport.latitude_deg), Number(airport.longitude_deg)];
 
-  // Check if route1 array is not empty
-  if (route1.length > 0) {
-    centerPosition = [route1[0].lat, route1[0].lng];
-  } else if (route2.length > 0) {
-    centerPosition = [route2[0].lat, route2[0].lng];
-  }
-
-  // Extract lat and lng coordinates for the polylines
-  const polylinePositions1 = route1.map((marker) => [marker.lat, marker.lng]);
-  const polylinePositions2 = route2.map((marker) => [marker.lat, marker.lng]);
+  const response = await axios.post('http://127.0.0.1:8000/get_paths', {
+    "src": sourceCoords,
+    "des": destCoords,
+    "on_air": true
+  });
+    // Check fly_status and handle accordingly
+    // if (response.data.fly_status.toLowerCase().replace(/\s/g, "") === "cannotfly") {
+    //   alert("Cannot Fly in this region");
+    //   return;
+    // }
+    if (response.data.paths === null) {
+      alert( `${response.data.fly_status}`);
+      return;
+    }
+    setAdditionalPaths(response.data.paths.length > 10 ? response.data.paths.slice(0, 10) : response.data.paths);
+    // Update additional paths state
+    if (response.data.paths.length > 10) {
+      // Slice the response to keep only the first 10 paths
+      setAdditionalPaths(response.data.paths.slice(0, 10));
+   
+    } else {
+      setAdditionalPaths(response.data.paths);
+    }
+  };
 
   return (
     <MapContainer center={centerPosition} zoom={5} style={{ height: '100vh', width: '100%' }}>
@@ -113,33 +189,135 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-    
-<Marker position={[route1[0].lat, route1[0].lng]}>
-        <Popup>
-          {route1[0].name} <br /> [{route1[0].lat}, {route1[0].lng}]
-        </Popup>
-      </Marker>
-      <Marker position={[route1[route1.length - 1].lat, route1[route1.length - 1].lng]}>
-        <Popup>
-          {route1[route1.length - 1].name} <br /> [{route1[route1.length - 1].lat}, {route1[route1.length - 1].lng}]
-        </Popup>
-      </Marker>
-
-      {/* Display markers for start and end of route 2 */}
-      <Marker position={[route2[0].lat, route2[0].lng]}>
-        <Popup>
-          {route2[0].name} <br /> [{route2[0].lat}, {route2[0].lng}]
-        </Popup>
-      </Marker>
-      <Marker position={[route2[route2.length - 1].lat, route2[route2.length - 1].lng]}>
-        <Popup>
-          {route2[route2.length - 1].name} <br /> [{route2[route2.length - 1].lat}, {route2[route2.length - 1].lng}]
-        </Popup>
-      </Marker>
-
-      <Polyline positions={polylinePositions1} color="blue" />
-      <Polyline positions={polylinePositions2} color="red" />
      
+   {/* {paths[0] && paths[0].length> 0 && (
+    <>
+      <Marker position={[paths[0][0][0], paths[0][0][1]]}>
+        <Popup>Start</Popup>
+      </Marker>
+      <Marker position={[paths[0][paths[0].length - 1][0], paths[0][paths[0].length - 1][1]]}>
+        <Popup>End</Popup>
+      </Marker>
+    </>
+  )}
+
+{paths && paths[0] && paths[0].length > 0 && (
+        <>
+          <Marker position={[paths[0][0][0], paths[0][0][1]]}>
+            <Popup>Start</Popup>
+          </Marker>
+          <Marker position={[paths[0][paths[0].length - 1][0], paths[0][paths[0].length - 1][1]]}>
+            <Popup>End</Popup>
+          </Marker>
+        </>
+      )}
+
+    
+      {paths && paths.slice(1).map((coordinates, index) => (
+        <Polyline
+          key={index + 1}
+          positions={coordinates}
+          color="grey"
+        />
+      ))}
+
+      {paths && paths[0] && (
+        <Polyline
+          positions={paths[0]}
+          color="blue"
+          weight={5}
+        >
+          <Tooltip direction="center" offset={[0, -20]} opacity={1} className="custom-tooltip">
+            <div style={{ textAlign: 'center' }}>
+              <strong style={{ color: "blue" }}>Coordinates for optimal path:</strong><br />
+              <div dangerouslySetInnerHTML={{ __html: formatCoordinates(paths[0]) }} />
+            </div>
+          </Tooltip>
+        </Polyline>
+      )}
+
+     
+
+{(additionalPaths && additionalPaths.length > 0 ? additionalPaths : paths)[0] && (
+  <>
+    <Marker position={[(additionalPaths.length > 0 ? additionalPaths : paths)[0][0][0], (additionalPaths.length > 0 ? additionalPaths : paths)[0][0][1]]}>
+      <Popup>Start</Popup>
+    </Marker>
+    <Marker position={[(additionalPaths.length > 0 ? additionalPaths : paths)[0][(additionalPaths.length > 0 ? additionalPaths : paths)[0].length - 1][0], (additionalPaths.length > 0 ? additionalPaths : paths)[0][(additionalPaths.length > 0 ? additionalPaths : paths)[0].length - 1][1]]}>
+      <Popup>End</Popup>
+    </Marker>
+  </>
+)}
+
+{(additionalPaths && additionalPaths.length > 0 ? additionalPaths : paths).slice(1).map((coordinates, index) => (
+  <Polyline
+    key={index + 1}
+    positions={coordinates}
+    color="grey"
+  />
+))}
+
+{(additionalPaths && additionalPaths.length > 0 ? additionalPaths : paths)[0] && (
+  <Polyline
+    positions={(additionalPaths.length > 0 ? additionalPaths : paths)[0]}
+    color="blue"
+    weight={5}
+  >
+    <Tooltip direction="center" offset={[0, -20]} opacity={1} className="custom-tooltip">
+      <div style={{ textAlign: 'center' }}>
+        <strong style={{ color: "blue" }}>Coordinates for optimal path:</strong><br />
+        <div dangerouslySetInnerHTML={{ __html: formatCoordinates((additionalPaths.length > 0 ? additionalPaths : paths)[0]) }} />
+      </div>
+    </Tooltip>
+  </Polyline>
+)}
+ */}
+
+
+{displayPaths[0] && (
+        <>
+          <Marker position={[displayPaths[0][0][0], displayPaths[0][0][1]]}>
+            <Popup>Source</Popup>
+          </Marker>
+          <Marker position={[displayPaths[0][displayPaths[0].length - 1][0], displayPaths[0][displayPaths[0].length - 1][1]]}>
+            <Popup>Destination</Popup>
+          </Marker>
+        </>
+      )}
+
+      {/* Display grey Polylines */}
+      {displayPaths.slice(1).map((coordinates, index) => (
+        <Polyline
+          key={index + 1}
+          positions={coordinates}
+          color="grey"
+          z-index="-1"
+        />
+      ))}
+
+      {displayPaths[0] && (
+        <Polyline
+          positions={displayPaths[0]}
+          color="blue"
+          weight={5}
+          opacity={1}
+        >
+          <Tooltip direction="center" offset={[0, -20]} opacity={1} className="custom-tooltip">
+            <div style={{ textAlign: 'center' }}>
+              <strong style={{ color: "blue" }}>Coordinates for optimal path:</strong><br />
+              <div dangerouslySetInnerHTML={{ __html: formatCoordinates(displayPaths[0]) }} />
+            </div>
+          </Tooltip>
+        </Polyline>
+      )}
+
+
+
+
+
+
+
+
 {domesticFlights.map(flight => (
         <Marker
           key={flight.id}
@@ -155,6 +333,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
             Aircraft Model: {flight.model}<br/>
             Departure Airport: {flight.departure}<br/>
             Arrival Airport: {flight.arrival}<br/>
+            <button onClick={() => handleButtonClick(flight)}>Find Optimal Path</button>
           </Popup>
         </Marker>
       ))}
@@ -189,6 +368,9 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
             Aircraft Model: {searchedFlightCoordinates.model}<br/>
             Departure Airport: {searchedFlightCoordinates.departure}<br/>
             Arrival Airport: {searchedFlightCoordinates.arrival}<br/>
+            {domesticAirports.has(searchedFlightCoordinates.arrival) && (
+        <button onClick={() => handleButtonClick(searchedFlightCoordinates)}>Find Optimal Path</button>
+      )}
           </Popup>
         </Marker>
       )}

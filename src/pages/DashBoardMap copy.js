@@ -184,6 +184,9 @@ const allowedModels = new Set([
   "GLF6",
 ]);
 
+
+
+
 const DashBoardmap = () => {
   const route1 = [
     { lat: 28.6139, lng: 77.209, name: "New Delhi" },
@@ -205,6 +208,8 @@ const DashBoardmap = () => {
   const [searchedFlightCoordinates, setSearchedFlightCoordinates] =
     useState(null);
   const [flightNumbers, setFlightNumbers] = useState([]);
+  const[paths,setPaths]=useState([]);
+  const[fly,setFly]=useState("");
   const { flightNumberModel, setFlightNumberModel } = useContext(FlightContext);
 
 //   const flightContext = useContext(FlightContext);
@@ -264,16 +269,43 @@ const DashBoardmap = () => {
       alert("Flight not found");
     }
   };
-  const printCoordinates = () => {
+  const printCoordinates =  async()=> {
     console.log(source, destination);
     if (!source || !destination) {
       alert("Please select source and destination airports");
       return;
     }
+    console.log("typeeeeee",typeof(source.lat));
+    const response = await axios.post('http://127.0.0.1:8000/get_paths', {
+      
+        "src": [
+          source.lat,source.lng
+        ],
+        "des": [
+          destination.lat,destination.lng
+        ],
+        "on_air": false
+    
+    });
+    console.log(response.data.fly_status);
+    if (response.data.paths === null) {
+      alert( `${response.data.fly_status}`);
+      return;
+    }
+    if (response.data.paths.length > 10) {
+      // Slice the response to keep only the first 5 paths
+      response.data.paths = response.data.paths.slice(0, 10);
+  }
+  
+
+  
+
+   setPaths( response.data.paths);
     console.log("Source Coordinates:", source);
     console.log("Destination Coordinates:", destination);
-    setSource("");
-    setDestination("");
+    console.log("response for paths", paths);
+    // setSource("");
+    // setDestination("");
   };
 
   // const fetchLiveFlights = async () => {
@@ -347,10 +379,10 @@ const DashBoardmap = () => {
           tr_lng: "97.416667",
           limit: "100",
         },
-        // headers: {
-        //   "X-RapidAPI-Key": "ad6e9e6a7amsh71758b54b182fd1p139d1djsn237760b8c83e",
-        //   "X-RapidAPI-Host": "flight-radar1.p.rapidapi.com",
-        // },
+        headers: {
+          "X-RapidAPI-Key": "ad6e9e6a7amsh71758b54b182fd1p139d1djsn237760b8c83e",
+          "X-RapidAPI-Host": "flight-radar1.p.rapidapi.com",
+        },
         catch (error) {
           console.error("Error fetching live flights:", error);
         }
@@ -394,9 +426,15 @@ const DashBoardmap = () => {
       // setFlightNumbers(combined.forEach(flight => {
       //   flightNumbers[flight.number] = flight.model;
       // }));
+
+      
       const updatedFlightNumbers = {};
       combined.forEach(flight => {
-        updatedFlightNumbers[flight.number] = flight.model;
+        updatedFlightNumbers[flight.number] = {
+          model: flight.model,
+          latitude: flight.lat,
+          longitude: flight.lng
+        };
       });
       setFlightNumberModel(updatedFlightNumbers);
     } catch (error) {
@@ -503,6 +541,8 @@ const DashBoardmap = () => {
       <MapComponent
         route1={route1}
         route2={route2}
+        paths={paths}
+        domesticAirports={domesticAirports} 
         //flights={flights}
         domesticFlights={domesticFlights}
         internationalFlights={internationalFlights}
