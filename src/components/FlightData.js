@@ -3,7 +3,7 @@ import MaintenanceTable from './MaintenanceTable';
 import Riskometer from './Riskometer';
 import { FlightContext } from '../FlightContext';
 
-const FlightData = ({ flightNumber,healthData,nearByAssistance }) => {
+const FlightData = ({ flightNumber,healthData, nearByAssistance }) => {
   const { flightNumberModel } = useContext(FlightContext);
   const [flightData, setFlightData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -34,10 +34,7 @@ const FlightData = ({ flightNumber,healthData,nearByAssistance }) => {
 
   }, [flightNumber, flightNumberModel]);
 
-  const handleClick = (e) => {
-    const box = e.currentTarget;
-    box.classList.toggle('active');
-  };
+
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>{error}</p>;
@@ -48,7 +45,7 @@ const FlightData = ({ flightNumber,healthData,nearByAssistance }) => {
       <h2>Flight Data for {flightNumber}</h2>
       <div className="grid-container" style={{ marginBottom: '20px' }}>
         <div className="glass-box">
-          <Riskometer />
+          <Riskometer flightID={flightNumber} />
         </div>
         <div className="glass-box">
         <p>Near By Assistance: {nearByAssistance}</p>
@@ -56,7 +53,7 @@ const FlightData = ({ flightNumber,healthData,nearByAssistance }) => {
       </div>
 
       <div className="grid-container" style={{ marginBottom: '20px' }}>
-        <div className="glass-box">
+        <div className="glass-box" >
           <p>Aircraft Type: {healthData.aircraft_type}</p>
         </div>
         <div className="glass-box">
@@ -65,37 +62,39 @@ const FlightData = ({ flightNumber,healthData,nearByAssistance }) => {
       </div>
 
       <div className="grid-container">
-        <div className="glass-box" onClick={handleClick}>
+        <div className="glass-box" >
           <p>Aircraft Fuel: {healthData.aircraft_fuel}</p>
-          {/* <img
+          <img
             src={'images/3d_co_emissions.png'}
             alt="Fuel Flow Graph"
-          /> */}
+          />
         </div>
         {/* Additional boxes with aircraft emissions data */}
 
-        <div className="glass-box" onClick={handleClick}>
+        <div className="glass-box" >
           <p>CO2 Emissions: {healthData.aircraft_emissions.co2}</p>
           {/* <img
             src={flightData.filenames[1]}
             alt="H2O Emissions Graph"
           /> */}
         </div>
-        <div className="glass-box" onClick={handleClick}>
+        <div className="glass-box" >
           <p>H2O Emissions: {healthData.aircraft_emissions.h2o}</p>
           {/* <img
             src={flightData.filenames[1]}
             alt="H2O Emissions Graph"
           /> */}
         </div>
-        <div className="glass-box" onClick={handleClick}>
+        </div>
+        <div className="grid-container" style={{ marginTop: '20px' }}>
+        <div className="glass-box" style={{ width: '420px' }}>
           <p>SOx Emissions: {healthData.aircraft_emissions.sox}</p>
           {/* <img
             src={flightData.filenames[3]}
             alt="SOx Emissions Graph"
           /> */}
         </div>
-        <div className="glass-box" onClick={handleClick}>
+        <div className="glass-box">
           <p>NOx Emissions: {healthData.aircraft_emissions.nox}</p>
           {/* <img
             src={flightData.filenames[4]}
@@ -103,25 +102,9 @@ const FlightData = ({ flightNumber,healthData,nearByAssistance }) => {
           /> */}
         </div>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       </div>
       <h1>Maintenance History</h1>
-      <MaintenanceTable />
+      <MaintenanceTable flightNumber={flightNumber} />
     </div>
   );
 };

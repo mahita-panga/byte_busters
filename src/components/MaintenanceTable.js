@@ -2,11 +2,10 @@ import React from 'react';
 import MaintenanceRow from './MaintenanceRow';
 import { generateMaintenanceHistory } from './MaintanaceData';
 
-const maintenanceData = Array.from({ length: 1 }, (_, index) =>
-  generateMaintenanceHistory(index + 1)
-).sort((a, b) => b.maintenanceDate - a.maintenanceDate); 
+const MaintenanceTable = ({flightNumber}) => {
 
-const MaintenanceTable = () => {
+  const maintenance = generateMaintenanceHistory(flightNumber);
+
   return (
     <table>
       <thead>
@@ -20,9 +19,9 @@ const MaintenanceTable = () => {
         </tr>
       </thead>
       <tbody>
-        {maintenanceData.map((maintenance, index) => (
-          <MaintenanceRow key={index} maintenance={maintenance} />
-        ))}
+      
+
+<MaintenanceRow maintenance={maintenance} />
       </tbody>
     </table>
   );
