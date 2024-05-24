@@ -13,7 +13,7 @@ def get_weather_context(lat , long):
 
 class Graph:
     def __init__(self) -> None:
-        self.routes = pd.read_csv("Data/final_domestic_routes.csv" ,index_col='route')
+        self.routes = pd.read_csv("../Data/final_domestic_routes.csv" ,index_col='route')
         # print(self.routes.head())
         self.get_edge_list()
         self.create_adjacency_graph(self.edge_list)
