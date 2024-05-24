@@ -20,23 +20,31 @@ def aircraft_fuel_consumption(ac_type: str) -> float:
         # Get the specific attribute (submodule) from the parent module
         submodule = getattr(module, submodule_name)
 
+        if hasattr(submodule, 'assign'):
+            f = submodule.assign(
+                # the vertical_rate is not present in the data
+                vertical_rate=lambda df: df.altitude.diff().fillna(0) * 60,
+                # convert to kg/s
+                fuelflow=lambda df: df.fuelflow / 3600,
+            )
+            resampled = f.resample("5s")
+            average_fuel = resampled.weight_max - resampled.weight_min
+            return average_fuel
+
     except ModuleNotFoundError as e:
         raise ModuleNotFoundError(f"Module {module_name} not found. Ensure it exists and is correctly named.") from e
-    except AttributeError as e:
-        raise AttributeError(f"Submodule {submodule_name} not found in {module_name}.") from e
 
-    if hasattr(submodule, 'assign'):
-        f = submodule.assign(
-            # the vertical_rate is not present in the data
-            vertical_rate=lambda df: df.altitude.diff().fillna(0) * 60,
-            # convert to kg/s
-            fuelflow=lambda df: df.fuelflow / 3600,
-        )
-        resampled = f.resample("5s")
-        average_fuel = resampled.weight_max - resampled.weight_min
-        return average_fuel
-    else:
-        raise Exception(f"Module {module_name} does not have assign() or does not exists")
+    except AttributeError as e:
+        openap_fuel_flow = FuelFlow(ac=ac_type, use_synonym=True)
+        aircraft = prop.aircraft(ac=ac_type, use_synonym=True)
+
+        tas_avg = np.mean(np.linspace(50, 500, 100))
+        alt_avg = np.mean(np.linspace(100, 42000, 100))
+        path_angle_avg = np.mean(np.linspace(0, 15, 10))
+        mass = aircraft["limits"]["MTOW"] * 0.85
+
+        ff = openap_fuel_flow.enroute(mass=mass, tas=tas_avg, alt=alt_avg, path_angle=path_angle_avg)
+        return round(ff * (10 ** (len(str(int(mass))) - 1)), 2)
 
 
 def save_plot_as_png(fig, filename):
@@ -55,9 +63,9 @@ def create_plots(aircraft_type, flight_number):
     create_dir(f'plots/{flight_number}')
     plot_path = f'plots/{flight_number}'
 
-    aircraft = prop.aircraft(ac=aircraft_type)
-    fuelflow = FuelFlow(ac=aircraft_type)
-    emission = Emission(ac=aircraft_type)
+    aircraft = prop.aircraft(ac=aircraft_type,use_synonym=True)
+    fuelflow = FuelFlow(ac=aircraft_type,use_synonym=True)
+    emission = Emission(ac=aircraft_type,use_synonym=True)
 
     tas = np.linspace(50, 500, 50)
     alt = np.linspace(100, 35000, 50)

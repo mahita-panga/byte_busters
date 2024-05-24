@@ -3,6 +3,8 @@ import numpy as np
 from fastapi import APIRouter, FastAPI, Response
 from openap import FuelFlow, Emission, prop
 import traffic
+
+from api_code.algorithms.graph import Graph
 from utils.data_models import RequestAircraftModel, ResponseAircraftInfo ,SrcDesParams , AirplanePosition
 from utils.utils import create_plots
 from algorithms.a_star import *
@@ -34,7 +36,7 @@ def aircraft_details(response: Response, payload: RequestAircraftModel):
     aircraft_model = payload.aircraft_model
     #aircraft_engine = payload.aircraft_engine
 
-    emission = Emission(ac=aircraft_model)
+    emission = Emission(ac=aircraft_model,use_synonym=True)
     aircraft = prop.aircraft(aircraft_model)
     mass = aircraft["limits"]["MTOW"] * 0.85
     cruise_altitude = aircraft["cruise"]["height"]
