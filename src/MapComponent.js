@@ -128,7 +128,11 @@ const formatCoordinates = (coordinates) => {
 const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlights, internationalFlights, searchedFlightCoordinates,paths, domesticAirports}) => {
 
   // Default center position
-  let centerPosition = [28.6139, 77.2090]; // Default to New Delhi coordinates
+  //let centerPosition = [28.6139, 77.2090]; // Default to New Delhi coordinates
+
+
+   let centerPosition = [21.0, 78.0]; // Geographic center of India
+  // const zoomLevel = 5; // Adjust zoom level to fit the whole country
   const [additionalPaths, setAdditionalPaths] = useState([]);
   const displayPaths = additionalPaths.length > 0 ? additionalPaths : paths;
   useEffect(() => {
@@ -185,7 +189,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
 
   
   return (
-    <MapContainer center={centerPosition} zoom={5} style={{ height: '100vh', width: '100%' }}>
+    <MapContainer center={centerPosition} zoom={4.5} style={{ height: '100vh', width: '100%' }}>
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -302,6 +306,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
           color="blue"
           weight={5}
           opacity={1}
+         
         >
           <Tooltip direction="center" offset={[0, -20]} opacity={1} className="custom-tooltip">
             <div style={{ textAlign: 'center' }}>
