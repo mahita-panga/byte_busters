@@ -17,7 +17,7 @@ L.Icon.Default.mergeOptions({
 
 
 const searchedFlightIcon = new L.Icon({
-  iconUrl: 'https://cdn.icon-icons.com/icons2/1918/PNG/512/iconfinder-documents07-1622836_121949.png',
+  iconUrl: 'https://cdn.icon-icons.com/icons2/2444/PNG/512/location_map_pin_mark_icon_148684.png',
 
   iconSize: [44, 44], // Size of the icon
   iconAnchor: [16, 32], // Point of the icon which will correspond to marker's location
@@ -158,7 +158,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
   const sourceCoords = [Number(flight.lat), Number(flight.lng)];
   const destCoords = [Number(airport.latitude_deg), Number(airport.longitude_deg)];
 
-  const response = await axios.post('http://127.0.0.1:8000/get_paths', {
+  const response = await axios.post('http://65.2.161.206:8000/get_paths', {
     "src": sourceCoords,
     "des": destCoords,
     "on_air": true
@@ -183,6 +183,7 @@ const MapComponent = ({ route1, route2, flights ,highlightedFlight ,domesticFlig
     }
   };
 
+  
   return (
     <MapContainer center={centerPosition} zoom={5} style={{ height: '100vh', width: '100%' }}>
       <TileLayer
