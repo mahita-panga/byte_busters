@@ -305,7 +305,7 @@ const DashBoardmap = () => {
 
       console.log(response.data.fly_status);
       if (response.data.paths === null) {
-        alert(`${response.data.fly_status}`);
+        alert(`${response.data.fly_status}\nReason: Bad weather condition`);
         return;
       }
       if (response.data.paths.length > 10) {
