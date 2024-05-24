@@ -169,7 +169,7 @@ const HealthDashboard = () => {
             ],
           }
         );
-        setNearByAssistance(response_nearByAssistance.data.name);
+        setNearByAssistance(response_nearByAssistance.data);
       } else {
         console.log("Flight data not found for flight number:", number);
         // sethealthData(null); 
