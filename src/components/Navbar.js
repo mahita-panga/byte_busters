@@ -6,8 +6,9 @@ const Navbar = () => {
     <nav className="navbar">
       <div className="navbar-brand">ByteBusters</div>
       <div className="navbar-links">
-        <Link to="/dashboard">Dashboard</Link>
-        <Link to="/">Map</Link>
+      <Link to="/">Optimal Routes</Link>
+        <Link to="/dashboard">Health Check Up</Link>
+        
       </div>
     </nav>
   );
