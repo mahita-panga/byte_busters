@@ -168,4 +168,5 @@ This will launch the application and open it in your default browser at `http://
 - react-icons
 
 
-
+## Understand the UI
+https://docs.google.com/document/d/1tK_Lih3fDHWXxiw3JL9phlDDjgW2f2o5RuyHbiVDQQA/edit?usp=sharing
