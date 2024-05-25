@@ -214,24 +214,25 @@ class PathPlanner():
         paths, scores = self.get_scores_and_rank(paths)
         paths = [[self.graph.coordinate_map[node] for node in path] for path in paths]
         paths = [[src] + path + [des] for path in paths]
-        return paths
+        rain_paths = get_deliberate_rain_paths(paths=paths)
+        return paths, rain_paths
 
     def return_data_dict(self, src, des, on_air=False):
-        paths = self.find_multiple_paths_by_coordinates(src, des)
-        rain_nodes = self.get_nodes_with_rain()
+        paths, rain_paths = self.find_multiple_paths_by_coordinates(src, des)
+        # rain_nodes = self.get_nodes_with_rain()
         snow_nodes = self.get_nodes_with_snow()
         if len(paths) == 0:
             return {
                 "fly_status": "Cannot Fly" if not on_air else "Find nearby airport as overall bad weather conditions",
                 "paths": None,
-                "rain_areas": rain_nodes,
+                "rain_areas": rain_paths,
                 "snow_areas": snow_nodes
             }
         else:
             return {
                 "fly_status": "Can Fly",
                 "paths": paths,
-                "rain areas": rain_nodes,
+                "rain areas": rain_paths,
                 "snow nodes": snow_nodes
             }
 
@@ -247,6 +248,21 @@ class PathPlanner():
 def api_json(dictionary: dict):
     with open('sample.json', 'w') as f:
         json.dump(dictionary, f)
+
+
+def get_deliberate_rain_paths(paths):
+    best_path_set = set(tuple(coord) for coord in paths[0])
+    clusters = []
+
+    for path in paths[1:]:
+        path_clusters = []
+        for i in range(len(path) - 2):
+            cluster = path[i:i + 3]
+            if any(tuple(coord) not in best_path_set for coord in cluster):
+                path_clusters.append(cluster)
+        clusters.append(path_clusters)
+
+    return [item for sublist in clusters for item in sublist if sublist]
 
 
 def main():
