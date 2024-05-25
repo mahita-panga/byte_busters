@@ -338,7 +338,7 @@ const DashBoardmap = () => {
           limit: "100",
         },
         headers: {
-          "X-RapidAPI-Key": "356bfa3debmsh981a5cfa0ecb8d6p152eacjsnb8f6ce1aaa8c",
+          "X-RapidAPI-Key": "955f03dc69msh6c43bceebc6afc9p17ce0ajsn3ca143658ec2",
           "X-RapidAPI-Host": "flight-radar1.p.rapidapi.com",
         },
         catch (error) {
