@@ -1,24 +1,23 @@
-from algorithms.graph import Graph , get_weather_context
-from heapq import nsmallest , heappush , heappop
-from math import sqrt 
+from api_code.algorithms.graph import Graph, get_weather_context
+from heapq import nsmallest, heappush, heappop
+from math import sqrt
 import json
-import time 
+import time
 import threading
 
-red_flag_codes = set([4,5,6,7,8,9,13,14,15,16,17,22,23,25,26,27,28,29, # WMO CODES WHERE WEATHER IS NOT SUITABLE FOR FLIGHT OPERATION
-                      33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48, \
-                      49,54,55,56,57,58,59,6061,62,63,64,65,66,67,68,69, \
-                      80,81,82,83,84 ,85 ,86,87,88,89,90,91,92,94,95,96,\
-                      97,98,99 ])
+red_flag_codes = {4, 5, 6, 7, 8, 9, 13, 14, 15, 16, 17, 22, 23, 25, 26, 27, 28, 29, 33, 34, 35, 36, 37, 38, 39, 40, 41,
+                  42, 43, 44, 45, 46, 47, 48, 49, 54, 55, 56, 57, 58, 59, 6061, 62, 63, 64, 65, 66, 67, 68, 69, 80, 81,
+                  82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 94, 95, 96, 97, 98, 99}
 
-def get_weather_code_score(code :int):
-    if code in red_flag_codes :
+
+def get_weather_code_score(code: int):
+    if code in red_flag_codes:
         return 30
-    else :
+    else:
         return 0
-    
 
-def euclidean_heuristic(source_coords , destination_coords):
+
+def euclidean_heuristic(source_coords, destination_coords):
     """
     Calculates the straight-line (Euclidean) distance estimate between two points.
 
@@ -44,27 +43,28 @@ def euclidean_heuristic(source_coords , destination_coords):
 
     return distance
 
+
 def euclidean_distance(lat1, lon1, lat2, lon2):
     return sqrt((lat1 - lat2) ** 2 + (lon1 - lon2) ** 2)
 
+
 def find_nearest_coordinates(coords, target_lat, target_lon, n=3):
     distances = {}
-    
+
     for key, (lat, lon) in coords.items():
         distance = euclidean_distance(target_lat, target_lon, lat, lon)
         distances[key] = distance
-    
+
     nearest_keys = nsmallest(n, distances, key=distances.get)
-    
+
     return nearest_keys
 
 
-
 class PathPlanner():
-    def __init__(self , graph:Graph) -> None:
+    def __init__(self, graph: Graph) -> None:
         self.routes = graph.get_graph()
         self.graph = graph
-        self.weather_data = {} 
+        self.weather_data = {}
         self.cache_lock = threading.Lock()
         self.cleanup_thread = threading.Thread(target=self.weather_updation, daemon=True)
         self.cleanup_thread.start()
@@ -81,62 +81,64 @@ class PathPlanner():
         nearest_keys = nsmallest(n, distances, key=distances.get)
 
         return nearest_keys
-    
-    def find_multiple_paths_by_nodeId(self , src , des) :
+
+    def find_multiple_paths_by_nodeId(self, src, des):
         """
-        Returns : 
-            list of list cotainings paths with each path list containing the node id in it 
+        Returns :
+            list of list cotainings paths with each path list containing the node id in it
         """
-        lat , long = src 
-        src_nodes = find_nearest_coordinates(self.graph.coordinate_map, lat, long , n =5)
-        lat , long = des
-        des_nodes = find_nearest_coordinates(self.graph.coordinate_map , lat, long , n =5)
-        paths = [] 
-        for src_node in src_nodes :
-            for des_node in des_nodes :
-                paths.extend(self.a_star_search(src_node , des_node ,max_paths=3))
+        lat, long = src
+        src_nodes = find_nearest_coordinates(self.graph.coordinate_map, lat, long, n=5)
+        lat, long = des
+        des_nodes = find_nearest_coordinates(self.graph.coordinate_map, lat, long, n=5)
+        paths = []
+        for src_node in src_nodes:
+            for des_node in des_nodes:
+                paths.extend(self.a_star_search(src_node, des_node, max_paths=3))
         return paths
 
-    def weather_updation(self , updation:bool=False , updation_interval:int =3600 ):
-        if not updation : 
-            while True : 
-                with self.cache_lock : 
+    def weather_updation(self, updation: bool = False, updation_interval: int = 3600):
+        if not updation:
+            while True:
+                with self.cache_lock:
                     current_time = time.time()
-                    keys_to_delete = [key for key, (timestamp, _) in self.weather_data.items() if current_time - timestamp > updation_interval]
-                    for key in keys_to_delete :
-                        del self.weather_data[key] 
+                    keys_to_delete = [key for key, (timestamp, _) in self.weather_data.items() if
+                                      current_time - timestamp > updation_interval]
+                    for key in keys_to_delete:
+                        del self.weather_data[key]
                 time.sleep(1)
-        else :
-            while True :
-                with self.cache_lock :
+        else:
+            while True:
+                with self.cache_lock:
                     current_time = time.time()
-                    keys_to_update = [key for key, (timestamp, _) in self.weather_data.items() if current_time - timestamp > updation_interval]
-                    for key in keys_to_update :
+                    keys_to_update = [key for key, (timestamp, _) in self.weather_data.items() if
+                                      current_time - timestamp > updation_interval]
+                    for key in keys_to_update:
                         self.weather_data[key] = self.update_weather_data_for_node(key)
                 time.sleep(1)
 
-
-    def update_weather_data_for_node(self , node_id ) :
-        if node_id not in self.weather_data :
+    def update_weather_data_for_node(self, node_id):
+        if node_id not in self.weather_data:
             # print(node_id)
-            lat , long = self.graph.coordinate_map[node_id]
-            self.weather_data[node_id] = (time.time() , get_weather_context(lat , long))
-            
-    def get_weather_data_for_node(self , node_id) :
-        if node_id not in self.weather_data :
+            lat, long = self.graph.coordinate_map[node_id]
+            self.weather_data[node_id] = (time.time(), get_weather_context(lat, long))
+
+    def get_weather_data_for_node(self, node_id):
+        if node_id not in self.weather_data:
             self.update_weather_data_for_node(node_id)
-        _ , data =  self.weather_data[node_id]
-        return data 
-    
-    def get_weather_score(self , node_id) :
+        _, data = self.weather_data[node_id]
+        return data
+
+    def get_weather_score(self, node_id):
         weather = self.get_weather_data_for_node(node_id)
 
-        score = weather['rain'] + weather['showers'] + weather['snowfall'] + get_weather_code_score(weather['weather_code'])
-        if weather['rain'] > 0.6 : 
+        score = weather['rain'] + weather['showers'] + weather['snowfall'] + get_weather_code_score(
+            weather['weather_code'])
+        if weather['rain'] > 0.6:
             self.rouge_weather_node_rain.add(node_id)
-        if weather['snowfall'] > 0.6 :
+        if weather['snowfall'] > 0.6:
             self.rouge_weather_node_snow.add(node_id)
-        return score 
+        return score
 
     def a_star_search(self, source, destination, max_paths=3):
         """
@@ -156,7 +158,7 @@ class PathPlanner():
 
         # Set to store visited nodes
         visited = set()
-        results = [] 
+        results = []
         f_scores = []
         total_f_score = 0
         while frontier:
@@ -176,84 +178,84 @@ class PathPlanner():
             # Explore neighbors
             for neighbor in self.routes[current_node]:
                 if neighbor not in visited:
-                # Calculate g-score (hop count) for the neighbor
+                    # Calculate g-score (hop count) for the neighbor
                     g_score = len(path) + 1
 
-                # Heuristic function (assuming distance to destination is known for each node)
-                    h_score = euclidean_heuristic(self.graph.coordinate_map[neighbor] , self.graph.coordinate_map[destination]) 
-                # Calculate f-score (g_score + h_score)
+                    # Heuristic function (assuming distance to destination is known for each node)
+                    h_score = euclidean_heuristic(self.graph.coordinate_map[neighbor],
+                                                  self.graph.coordinate_map[destination])
+                    # Calculate f-score (g_score + h_score)
                     # print(h_score , g_score)
-                    total_f_score =  g_score  + 0.25 * h_score
+                    total_f_score = g_score + 0.25 * h_score
 
-                # Add neighbor to the frontier with its f-score, path, and g-score
+                    # Add neighbor to the frontier with its f-score, path, and g-score
                     heappush(frontier, (total_f_score, neighbor, path + [current_node]))
 
-        return results   
-    
-    def get_weather_scores_for_path(self , path) :
-        score = 0 
-        for node in path :
+        return results
+
+    def get_weather_scores_for_path(self, path):
+        score = 0
+        for node in path:
             score += self.get_weather_score(node)
-        return score 
-    
-    def get_scores_and_rank(self , paths ) :
+        return score
+
+    def get_scores_and_rank(self, paths):
         scores = []
         result = []
-        for path in paths :
+        for path in paths:
             score = self.get_weather_scores_for_path(path)
-            if score < 30 :
+            if score < 30:
                 result.append(path)
                 scores.append(score)
-        return result , scores
-        
-    def find_multiple_paths_by_coordinates(self , src , des) :
-        paths = self.find_multiple_paths_by_nodeId(src , des)
-        paths , scores = self.get_scores_and_rank(paths) 
+        return result, scores
+
+    def find_multiple_paths_by_coordinates(self, src, des):
+        paths = self.find_multiple_paths_by_nodeId(src, des)
+        paths, scores = self.get_scores_and_rank(paths)
         paths = [[self.graph.coordinate_map[node] for node in path] for path in paths]
-        paths = [[src]+path+[des] for path in paths ]
+        paths = [[src] + path + [des] for path in paths]
         return paths
-    
-    def return_data_dict(self, src , des , on_air=False) :
-        paths = self.find_multiple_paths_by_coordinates(src ,des)
+
+    def return_data_dict(self, src, des, on_air=False):
+        paths = self.find_multiple_paths_by_coordinates(src, des)
         rain_nodes = self.get_nodes_with_rain()
         snow_nodes = self.get_nodes_with_snow()
-        if len(paths) == 0  : 
+        if len(paths) == 0:
             return {
-                "fly_status" : "Cannot Fly" if not on_air else "Find nearby airport as overall bad weather conditions", 
-                "paths" : None ,
-                "rain_areas" : rain_nodes ,
-                "snow_areas" : snow_nodes
+                "fly_status": "Cannot Fly" if not on_air else "Find nearby airport as overall bad weather conditions",
+                "paths": None,
+                "rain_areas": rain_nodes,
+                "snow_areas": snow_nodes
             }
-        else : 
+        else:
             return {
-                "fly_status" : "Can Fly" , 
-                "paths" : paths , 
-                "rain areas" : rain_nodes , 
-                "snow nodes" : snow_nodes
+                "fly_status": "Can Fly",
+                "paths": paths,
+                "rain areas": rain_nodes,
+                "snow nodes": snow_nodes
             }
 
-    
-    def get_nodes_with_rain(self) :
-        res =  list(self.rouge_weather_node_rain)
+    def get_nodes_with_rain(self):
+        res = list(self.rouge_weather_node_rain)
         return [self.graph.coordinate_map[node] for node in res]
 
-    def get_nodes_with_snow(self) :
+    def get_nodes_with_snow(self):
         res = list(self.rouge_weather_node_snow)
         return [self.graph.coordinate_map[node] for node in res]
 
-def api_json(dictionary:dict):
-    with open('sample.json','w') as f:
-        json.dump(dictionary , f)
+
+def api_json(dictionary: dict):
+    with open('sample.json', 'w') as f:
+        json.dump(dictionary, f)
 
 
 def main():
     routes = Graph()
     pathplanner = PathPlanner(graph=routes)
-    dict = pathplanner.return_data_dict((13,80),(19,72))
+    dict = pathplanner.return_data_dict((13, 80), (19, 72))
     api_json(dict)
 
-    ### Testing the path generation and ranking with weather score 
-
+    ### Testing the path generation and ranking with weather score
 
 
 if __name__ == "__main__":

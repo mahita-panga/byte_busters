@@ -1,8 +1,10 @@
 import importlib
 import traffic
 import os
+import boto3
 import numpy as np
 import matplotlib
+
 matplotlib.use('Agg')  # Use a non-GUI backend
 import matplotlib.pyplot as plt
 
@@ -47,6 +49,16 @@ def aircraft_fuel_consumption(ac_type: str) -> float:
         return round(ff * (10 ** (len(str(int(mass))) - 1)), 2)
 
 
+def upload_file_to_s3(file_path, bucket_name, s3_folder, s3_filename):
+    s3_client = boto3.client('s3')
+    s3_path = os.path.join(s3_folder, s3_filename)
+    try:
+        s3_client.upload_file(file_path, bucket_name, s3_path)
+        print(f'Successfully uploaded {file_path} to {bucket_name}/{s3_path}')
+    except Exception as e:
+        print(f'Failed to upload {file_path} to {bucket_name}/{s3_path}: {e}')
+
+
 def save_plot_as_png(fig, filename):
     fig.write_image(filename, engine="kaleido")
 
@@ -62,10 +74,10 @@ def create_dir(path):
 def create_plots(aircraft_type, flight_number):
     create_dir(f'plots/{flight_number}')
     plot_path = f'plots/{flight_number}'
-
-    aircraft = prop.aircraft(ac=aircraft_type,use_synonym=True)
-    fuelflow = FuelFlow(ac=aircraft_type,use_synonym=True)
-    emission = Emission(ac=aircraft_type,use_synonym=True)
+    print(plot_path)
+    aircraft = prop.aircraft(ac=aircraft_type, use_synonym=True)
+    fuelflow = FuelFlow(ac=aircraft_type, use_synonym=True)
+    emission = Emission(ac=aircraft_type, use_synonym=True)
 
     tas = np.linspace(50, 500, 50)
     alt = np.linspace(100, 35000, 50)
@@ -101,8 +113,11 @@ def create_plots(aircraft_type, flight_number):
         "hc": hc
     }
 
+    s3_bucket = 'airbushack'
+    s3_folder = f'plots/{flight_number}'
     for key, filename in filenames.items():
         filepath = os.path.join(plot_path, filename)
+        print(f"FILEPATH: {filepath}")
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
         surf = ax.plot_surface(tas_, alt_, data[key], cmap='viridis')
@@ -110,6 +125,9 @@ def create_plots(aircraft_type, flight_number):
         plt.xlabel("TAS (kt)")
         plt.ylabel("Altitude (ft)")
         plt.savefig(filepath)
+        upload_file_to_s3(filepath, s3_bucket, s3_folder, filename)
+        print("Uploaded to s3")
         plt.close(fig)
+        os.remove(filepath)
 
     return [os.path.join(plot_path, filename) for filename in filenames.values()]

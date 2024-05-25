@@ -1,13 +1,15 @@
 import uvicorn
 import numpy as np
 from fastapi import APIRouter, FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
 from openap import FuelFlow, Emission, prop
 import traffic
+import os
 
 from api_code.algorithms.graph import Graph
-from utils.data_models import RequestAircraftModel, ResponseAircraftInfo ,SrcDesParams , AirplanePosition
-from utils.utils import create_plots
-from algorithms.a_star import *
+from api_code.utils.data_models import RequestAircraftModel ,SrcDesParams , AirplanePosition
+from api_code.utils.utils import create_plots
+from api_code.algorithms.a_star import *
 
 router = APIRouter()
 routes = Graph()
@@ -46,7 +48,7 @@ def aircraft_details(response: Response, payload: RequestAircraftModel):
     alt = np.linspace(100, cruise_altitude, 50)
     alt_avg = np.mean(alt)
 
-    from utils.utils import aircraft_fuel_consumption
+    from api_code.utils.utils import aircraft_fuel_consumption
     average_fuel_consumption = aircraft_fuel_consumption(ac_type = aircraft_model.lower())
 
     filenames =create_plots(aircraft_model, aircraft_number)
@@ -78,7 +80,7 @@ def get_paths_for_src_to_des(payload:SrcDesParams):
     dict: A dictionary containing the following information:
         - paths: A list of optimal routes from source to destination.
         - fly_status: A boolean indicating if all returned paths are airborne.
-        - rain_areas: A list of coordinates where rain is happening 
+        - rain_areas: A list of coordinates where rain is happening
         - snow_ares : A list of coordinates where snow is happening
     """
     src = payload.src
@@ -107,20 +109,37 @@ def get_nearest_airport(payload:AirplanePosition) :
     """
 
     src = payload.current_pos
-    with open('../Data/airports.json') as fp:
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        # Construct the path to the data folder
+    data_dir = os.path.join(root_dir, 'Data')
+    path = os.path.join(data_dir, 'airports.json')
+    with open(path) as fp:
         data = json.load(fp)
         res_idx = None
         minimum_dis = 1000
         for idx , airport in enumerate(data['airports']) :
             dis = euclidean_distance(src[0],src[1] , float(airport['latitude_deg']),float(airport['longitude_deg']))
-            if dis < minimum_dis : 
+            if dis < minimum_dis :
                 res_idx = idx
                 minimum_dis = dis
         return data['airports'][res_idx]
 
 app = FastAPI(title="ByteBusters")
 app.include_router(router)
-    
+
+origins = [
+    "http://localhost",
+    "http://localhost:8080",
+    # Add other allowed origins as needed
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
+)
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
