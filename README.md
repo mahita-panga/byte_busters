@@ -21,9 +21,9 @@ This project is a web application that provides endpoints for various functional
 - `/get_paths`: Endpoint to retrieve optimal routes from a source to a destination.
 - `/nearest_airport`: Endpoint to identify the nearest airport to a provided airplane's current position.
 
-## Contributing
+## Understand the endpoints
+https://docs.google.com/document/d/19fTsFrE78WA_-lMUVYW7ewuKmu67s4tXvbep-iNR0Eg/edit
 
-Contributions are welcome! If you find any issues or have suggestions for improvement, please open an issue or submit a pull request.
 
 
 ## Dependencies
